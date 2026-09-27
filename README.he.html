@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>הקצאת חלונות זמן לטיסות — מדריך קצר</title>
+  <style>
+    :root { color-scheme: dark; }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #0b0f19; color: #edf2fa; font: 16px/1.65 system-ui, sans-serif; }
+    main { max-width: 760px; margin: 0 auto; padding: 40px 24px; }
+    h1 { margin: 0 0 8px; font-size: 28px; line-height: 1.25; }
+    p { margin: 0 0 20px; color: #a0acc0; }
+    a { color: #00e5ff; text-underline-offset: 3px; }
+    a:focus-visible { outline: 2px solid #00e5ff; outline-offset: 4px; }
+    ol { padding-inline-start: 24px; }
+    li { margin-bottom: 16px; padding-inline-start: 4px; }
+    strong { color: #edf2fa; }
+    aside { margin-top: 28px; padding: 16px; border: 1px solid #263144; border-radius: 6px; background: #111724; }
+    aside p { margin: 0; font-size: 14px; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>הקצאת חלונות זמן לטיסות</h1>
+    <p>מדריך קצר · <a href="index.html">פתיחת היישום</a></p>
+    <ol>
+      <li><strong>בחירת חודש.</strong> השתמשו בחצים בלוח השנה. ההקצאה מתבצעת עבור החודש המוצג בלבד.</li>
+      <li><strong>הוספת חלונות זמן.</strong> הזינו תאריך בפורמט <bdi dir="ltr">DD/MM/YYYY</bdi>, שעת התחלה בשדה <bdi dir="ltr">From</bdi>, שעת סיום בשדה <bdi dir="ltr">To</bdi> וזיהוי שדה התעופה והמסלול. השעות הן בפורמט 24 שעות. לחצו על <strong><bdi dir="ltr">Add slot</bdi></strong>. שינוי שעת ההתחלה ממלא אוטומטית שעת סיום מאוחרת בשעה; ניתן לשנות אותה. ההתחלה והסיום חייבים להיות באותו תאריך.</li>
+      <li><strong>הוספת חניכים.</strong> הזינו את שמו של כל חניך ברשימת החניכים ולחצו על <strong><bdi dir="ltr">+</bdi></strong>.</li>
+      <li><strong>הזנת העדפות.</strong> פתחו חלון זמן בלוח השנה ולחצו על תגיות החניכים בצד שמאל. תגית מוארת מציינת שהחניך מעוניין בחלון הזמן; לחיצה נוספת מבטלת את הסימון. הטבלה שמתחת ללוח השנה היא סיכום לקריאה בלבד.</li>
+      <li><strong>חישוב ההקצאה.</strong> לחצו על <strong><bdi dir="ltr">COMPUTE FAIR DISTRIBUTION</bdi></strong>. המערכת נותנת עדיפות לחניכים שקיבלו פחות הקצאות, ובמקרה של שוויון — לחניכים שסימנו פחות חלונות זמן בחודש. הקצאות ידניות קיימות נשמרות ואינן משתנות בחישוב.</li>
+      <li><strong>התאמה ידנית.</strong> פתחו חלון זמן, הפעילו את המתג <strong><bdi dir="ltr">Enable force assignment</bdi></strong>, בחרו חניך ולחצו על <strong><bdi dir="ltr">Force assignment</bdi></strong>. אפשר לבחור כל חניך, גם אם לא סימן את חלון הזמן. התגית הירוקה <strong><bdi dir="ltr">Assigned</bdi></strong> מציינת את החניך המשובץ כרגע.</li>
+    </ol>
+    <aside aria-label="שמירה וניקוי הקצאות">
+      <p>השינויים נשמרים אוטומטית בדפדפן זה. שינוי העדפות אינו משנה הקצאות קיימות עד להפעלת החישוב מחדש. לשחרור חלון זמן בודד לחצו על <strong><bdi dir="ltr">Clear assignment</bdi></strong> בפרטי החלון. הכפתור העליון <strong><bdi dir="ltr">CLEAR ASSIGNMENT</bdi></strong> מנקה את כל ההקצאות בכל החודשים לאחר אישור. בשני המקרים ההעדפות נשמרות.</p>
+    </aside>
+  </main>
+</body>
+</html>

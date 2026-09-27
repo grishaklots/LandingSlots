@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Flight Slot Allocation - Quick Start</title>
+  <style>
+    :root { color-scheme: dark; }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #0b0f19; color: #edf2fa; font: 16px/1.65 system-ui, sans-serif; }
+    main { max-width: 760px; margin: 0 auto; padding: 40px 24px; }
+    h1 { margin: 0 0 8px; font-size: 28px; line-height: 1.25; }
+    p { margin: 0 0 20px; color: #a0acc0; }
+    a { color: #00e5ff; text-underline-offset: 3px; }
+    a:focus-visible { outline: 2px solid #00e5ff; outline-offset: 4px; }
+    ol { padding-left: 24px; }
+    li { margin-bottom: 16px; padding-left: 4px; }
+    strong { color: #edf2fa; }
+    aside { margin-top: 28px; padding: 16px; border: 1px solid #263144; border-radius: 6px; background: #111724; }
+    aside p { margin: 0; font-size: 14px; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Flight Slot Allocation</h1>
+    <p>Quick start &middot; <a href="index.html">Open the application</a></p>
+    <ol>
+      <li><strong>Choose a month.</strong> Use the calendar arrows. Distribution applies to the displayed month.</li>
+      <li><strong>Add time slots.</strong> Enter a date as DD/MM/YYYY, From and To in 24-hour format, and the airport/runway. Click <strong>Add slot</strong>. From automatically sets To one hour later; adjust it as needed. Slots must end on the same date.</li>
+      <li><strong>Add students.</strong> Enter each student's name in the roster and click <strong>+</strong>.</li>
+      <li><strong>Add upvotes.</strong> Open a calendar slot and click the student chips on the left. Lit chips indicate upvotes; click again to remove one. The grid below is a read-only summary.</li>
+      <li><strong>Compute assignments.</strong> Click <strong>COMPUTE FAIR DISTRIBUTION</strong>. The system prioritizes students with fewer assignments, then fewer monthly upvotes. Existing manual assignments remain locked.</li>
+      <li><strong>Adjust manually.</strong> Open a slot, turn on <strong>Enable force assignment</strong>, choose any student, and click <strong>Force assignment</strong>. An upvote is not required. The green <strong>Assigned</strong> tag identifies the current pilot.</li>
+    </ol>
+    <aside aria-label="Saving and clearing assignments">
+      <p>Changes save automatically in this browser. Upvote edits do not reassign slots until you compute again. Use <strong>Clear assignment</strong> in a slot to release it, or the top-level <strong>CLEAR ASSIGNMENT</strong> button to clear assignments across all months after confirmation. Both preserve upvotes.</p>
+    </aside>
+  </main>
+</body>
+</html>
