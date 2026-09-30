@@ -61,6 +61,11 @@
     .subtitle { color: var(--muted); font-size: 12px; margin-top: 9px; }
     .title-actions { gap: 12px; }
     .btn.clear-all { min-height: 44px; font: 600 11px var(--mono); letter-spacing: .04em; }
+    .data-toolbar { display: flex; align-items: center; justify-content: flex-end; gap: 10px; flex-wrap: wrap; margin: -8px 0 20px; }
+    .data-toolbar .eyebrow { margin-right: auto; }
+    .import-summary { padding: 13px; border: 1px solid var(--line); border-radius: 6px; margin-top: 15px; white-space: pre-line; overflow-wrap: anywhere; }
+    #import-file { margin-top: 5px; }
+    #import-status { margin-top: 10px; }
     .scope-note { text-align: right; font-size: 10px; color: var(--muted); line-height: 1.8; }
     .scope-note strong { font-weight: 400; color: var(--text); }
     .storage-warning { margin-bottom: 18px; padding: 13px 16px; background: #f2bd6910; color: var(--amber); border: 1px solid #f2bd693b; border-radius: 6px; display: flex; gap: 12px; align-items: center; justify-content: space-between; }
@@ -346,6 +351,11 @@
         <button class="btn clear-all" id="clear-all-assignments" title="Clear all assignments across all months; retain upvotes"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 4 4L19 6M5 21h14"/></svg><span>CLEAR ASSIGNMENT</span></button>
       </div>
     </section>
+    <div class="data-toolbar" aria-label="Workspace file tools">
+      <span class="eyebrow">Workspace data / all months</span>
+      <button class="btn" id="export-data"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m-4-4 4 4 4-4M4 16v5h16v-5"/></svg>Export data</button>
+      <button class="btn" id="import-data"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15V3m-4 4 4-4 4 4M4 16v5h16v-5"/></svg>Import data</button>
+    </div>
     <aside class="storage-warning" id="storage-warning" role="alert" hidden>
       <p id="storage-message"></p><button class="btn small" id="retry-storage">Retry saving</button>
     </aside>
@@ -416,6 +426,17 @@
     <footer class="page-footer"><span class="row"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V6a4 4 0 0 1 8 0v4"/></svg>LOCAL-ONLY DEMO &nbsp;/&nbsp; No servers. No telemetry.</span><span>Planning simulation only &middot; Not an operational airport clearance system</span></footer>
   </main>
   <dialog id="slot-dialog" aria-labelledby="slot-dialog-title"></dialog>
+  <dialog id="import-dialog" aria-labelledby="import-title" aria-describedby="import-description">
+    <div class="dialog-header"><div><div class="eyebrow">Workspace data</div><h2 id="import-title">Import workspace</h2></div><button class="btn icon-btn" data-close="import-dialog" aria-label="Close import">&times;</button></div>
+    <div class="dialog-body">
+      <p id="import-description">Choose an exported JSON file. Import replaces all students, landing windows, upvotes, and assignments across every month; it does not merge them. Export your current workspace first if you need a backup.</p>
+      <label class="field" for="import-file">Workspace file<input id="import-file" type="file" accept=".json,application/json"></label>
+      <p id="import-status" role="status"></p>
+      <p class="import-summary" id="import-summary" hidden></p>
+      <p class="form-error" id="import-error" role="alert" hidden></p>
+      <div class="dialog-actions"><button class="btn" data-close="import-dialog">Cancel</button><button class="btn primary" id="confirm-import" disabled>Replace workspace</button></div>
+    </div>
+  </dialog>
   <dialog id="confirm-dialog" aria-labelledby="confirm-title">
     <div class="dialog-header"><div><div class="eyebrow">Confirm change</div><h2 id="confirm-title"></h2></div><button class="btn icon-btn" data-close="confirm-dialog" aria-label="Close confirmation">&times;</button></div>
     <div class="dialog-body"><p id="confirm-message"></p><div class="dialog-actions"><button class="btn" data-close="confirm-dialog" id="confirm-cancel">Cancel</button><button class="btn danger" id="confirm-action">Remove</button></div></div>
@@ -433,6 +454,7 @@
       </ol>
       <p>Roster counts show allocated slots / monthly upvotes, not a quota. Manual overrides can exceed that denominator. The average uses all roster members; coverage alerts are signals, not proof that limited preferences caused an outcome.</p>
       <p>Previously saved single-time slots receive a one-hour end time where valid. Slots that cannot fit that duration on the same date are marked for an explicit end time; their existing preferences and assignments are preserved.</p>
+      <p>Export data downloads a JSON backup of the entire workspace, including all months and the displayed month. Import data validates that file and asks you to confirm replacing the current workspace. Dates and times remain local, with no timezone conversion. Files stay on your device; nothing is uploaded.</p>
       <p class="notice">Greedy equity is deterministic, not a guarantee of maximum slot utilization. Preference edits update demand immediately but do not change assignments until you compute or override. Separate tabs do not merge concurrent edits; reload before editing in another tab.</p>
       <div class="dialog-actions"><button class="btn danger" id="clear-workspace">Clear workspace</button><button class="btn" data-close="help-dialog">Back to workspace</button></div>
     </div>
@@ -532,6 +554,20 @@
           }
         }
         return validateState(next);
+      }
+
+      function parseWorkspaceFile(text) {
+        let saved;
+        try { saved = JSON.parse(text.replace(/^\uFEFF/, "")); }
+        catch (error) {
+          if (error instanceof SyntaxError) throw new Error("The file is not valid JSON. Choose a workspace JSON export.");
+          throw error;
+        }
+        return restoreState(saved);
+      }
+
+      function serializeWorkspace(state) {
+        return JSON.stringify(validateState(state), null, 2);
       }
 
       function getMetrics(state, month = state.viewMonth) {
@@ -687,7 +723,7 @@
           viewMonth: monthOf(localDate(now))
         });
       }
-      return { VERSION, createEmptyState, validateState, restoreState, normalize, transition, computeFairDistribution, getMetrics, monthSlots, monthOf, localDate, validDateTime, validMonth, validTime, defaultEndTime, demand };
+      return { VERSION, createEmptyState, validateState, restoreState, parseWorkspaceFile, serializeWorkspace, normalize, transition, computeFairDistribution, getMetrics, monthSlots, monthOf, localDate, validDateTime, validMonth, validTime, defaultEndTime, demand };
     })();
   </script>
   <script id="application">
@@ -725,6 +761,8 @@
       let confirmAction = null;
       let busy = false;
       let toastTimer;
+      let importRequest = 0;
+      let pendingImport = null;
 
       function storageError(message, blocked = false) {
         persistenceBlocked = blocked;
@@ -753,15 +791,19 @@
         }
       }
 
+      function persist(state) {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+        persistenceBlocked = false;
+        storageIssue = "";
+        $("storage-warning").hidden = true;
+        $("save-status").textContent = "SAVED LOCALLY";
+        $("save-dot").classList.remove("warning");
+      }
+
       function save(state) {
         if (persistenceBlocked) return;
-        try {
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-          storageIssue = "";
-          $("storage-warning").hidden = true;
-          $("save-status").textContent = "SAVED LOCALLY";
-          $("save-dot").classList.remove("warning");
-        } catch (error) {
+        try { persist(state); }
+        catch (error) {
           console.warn("SlotOps could not persist workspace changes.", error);
           storageError("Your latest changes are in memory only. Browser storage is unavailable or full; keep this tab open and retry saving.");
         }
@@ -782,6 +824,13 @@
             state = D.createEmptyState();
             persistenceBlocked = false;
             save(state);
+            for (const listener of listeners) listener(state);
+          },
+          replace: imported => {
+            const next = D.validateState(structuredClone(imported));
+            // Write first: failed imports must preserve both the saved and in-memory workspace.
+            persist(next);
+            state = next;
             for (const listener of listeners) listener(state);
           }
         };
@@ -916,8 +965,10 @@
           }).join("")}</tbody></table>`;
       }
 
-      function syncClearAllButton() {
+      function syncWorkspaceActions() {
         $("clear-all-assignments").disabled = busy || !store.get().slots.some(slot => slot.allocatedStudentId !== null);
+        $("export-data").disabled = busy;
+        $("import-data").disabled = busy;
       }
 
       function render() {
@@ -930,7 +981,7 @@
         renderCalendar(state, metrics);
         renderRoster(state, metrics);
         renderMatrix(state, metrics);
-        syncClearAllButton();
+        syncWorkspaceActions();
         if ($("slot-dialog").open) syncSlotDetails();
         $("matrix-container").scrollLeft = scrollLeft;
         $("matrix-container").scrollTop = scrollTop;
@@ -1151,6 +1202,97 @@
         });
       });
 
+      $("export-data").addEventListener("click", () => {
+        let url;
+        const link = document.createElement("a");
+        try {
+          const content = D.serializeWorkspace(store.get());
+          url = URL.createObjectURL(new Blob([content], { type: "application/json;charset=utf-8" }));
+          link.href = url;
+          link.download = `slotops-workspace-${new Date().toISOString().replace(/[:.]/g, "-")}.json`;
+          document.body.append(link);
+          link.click();
+          toast("Workspace export download requested. The file includes all months.");
+        } catch (error) {
+          console.error("SlotOps workspace export failed.", error);
+          toast("The workspace could not be exported. Try again; your data is unchanged.", true);
+        } finally {
+          link.remove();
+          if (url) setTimeout(() => URL.revokeObjectURL(url), 1000);
+        }
+      });
+
+      $("import-data").addEventListener("click", () => {
+        if (busy) return;
+        importRequest++;
+        pendingImport = null;
+        $("import-file").value = "";
+        $("import-status").textContent = "";
+        $("import-summary").hidden = true;
+        $("import-error").hidden = true;
+        $("confirm-import").disabled = true;
+        $("import-dialog").showModal();
+      });
+
+      $("import-file").addEventListener("change", async () => {
+        const request = ++importRequest;
+        pendingImport = null;
+        $("confirm-import").disabled = true;
+        $("import-summary").hidden = true;
+        $("import-error").hidden = true;
+        $("import-status").textContent = "";
+        const file = $("import-file").files[0];
+        if (!file) return;
+        $("import-status").textContent = "Reading and validating file...";
+        try {
+          const text = await file.text();
+          if (request !== importRequest || !$("import-dialog").open) return;
+          const imported = D.parseWorkspaceFile(text);
+          const votes = imported.preferences.reduce((sum, p) => sum + p.slotIds.length, 0);
+          const assignments = imported.slots.filter(slot => slot.allocatedStudentId !== null).length;
+          const manual = imported.slots.filter(slot => slot.assignmentSource === "manual").length;
+          const incomplete = imported.slots.filter(slot => slot.endTime === null).length;
+          $("import-summary").textContent = `${file.name}\n${imported.students.length} students / ${imported.slots.length} slots / ${votes} upvotes\n${assignments} assignments (${manual} manual)\nDisplayed month: ${monthText(imported.viewMonth)}${incomplete ? `\n${incomplete} slots need an end time before allocation.` : ""}`;
+          $("import-summary").hidden = false;
+          $("import-status").textContent = "File validated. Confirm below to replace the entire workspace.";
+          pendingImport = imported;
+          $("confirm-import").disabled = false;
+        } catch (error) {
+          if (request !== importRequest || !$("import-dialog").open) return;
+          console.warn("SlotOps import file could not be loaded.", error);
+          $("import-status").textContent = "";
+          $("import-error").textContent = `${error instanceof Error ? error.message : "The file could not be read."} Your current workspace is unchanged.`;
+          $("import-error").hidden = false;
+        }
+      });
+
+      $("import-dialog").addEventListener("close", () => {
+        if ($("import-dialog").open) return;
+        importRequest++;
+        pendingImport = null;
+        $("confirm-import").disabled = true;
+        $("import-file").value = "";
+      });
+
+      $("confirm-import").addEventListener("click", () => {
+        if (!pendingImport || busy) return;
+        $("confirm-import").disabled = true;
+        try {
+          store.replace(pendingImport);
+        } catch (error) {
+          console.error("SlotOps workspace import failed.", error);
+          $("import-error").textContent = "Import could not be saved. Browser storage may be unavailable or full. Your previous workspace has not been replaced. Free up storage or enable it, then retry.";
+          $("import-error").hidden = false;
+          $("confirm-import").disabled = false;
+          return;
+        }
+        pendingImport = null;
+        $("import-dialog").close();
+        $("slot-error").hidden = true;
+        $("student-error").hidden = true;
+        toast("Workspace imported and saved locally. All months have been restored.");
+      });
+
       $("clear-all-assignments").addEventListener("click", () => {
         if (busy) return;
         const count = store.get().slots.filter(slot => slot.allocatedStudentId !== null).length;
@@ -1166,7 +1308,7 @@
       $("compute-button").addEventListener("click", async () => {
         if (busy) return;
         busy = true;
-        syncClearAllButton();
+        syncWorkspaceActions();
         const button = $("compute-button");
         button.disabled = true;
         button.classList.add("busy");
@@ -1187,7 +1329,7 @@
           toast(error instanceof Error ? error.message : "Distribution could not be completed. Your prior assignments have been preserved.", true);
         } finally {
           busy = false;
-          syncClearAllButton();
+          syncWorkspaceActions();
           button.disabled = false;
           button.classList.remove("busy");
           button.removeAttribute("aria-busy");
